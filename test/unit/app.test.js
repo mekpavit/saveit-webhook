@@ -1,4 +1,4 @@
-import getStateFromText from '../src/app.js'
+import getStateFromText from '../../src/app.js'
 
 
 describe('getStateFromText function', () => {
