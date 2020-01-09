@@ -1,13 +1,11 @@
 // babel.config.js
 module.exports = {
   presets: [
-    [
-      '@babel/preset-env',
-      {
-        targets: {
-          node: 'current',
-        },
-      },
-    ],
+    '@babel/preset-typescript',
+    '@babel/preset-env'
   ],
+  plugins: [
+    '@babel/plugin-proposal-export-default-from',
+    '@babel/plugin-transform-runtime'
+  ]
 };
