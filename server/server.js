@@ -1,5 +1,4 @@
 const express = require('express')
-const fs = require('fs')
 const middleware = require('@line/bot-sdk').middleware
 require('dotenv').config()
 
