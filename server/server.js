@@ -10,9 +10,9 @@ const config = {
   channelSecret: process.env.CHANNEL_SECRET
 }
 
+
 app.post('/', middleware(config), (req, res) => {
-  const eventObject = req.body
-  res.send(handleRequest(eventObject))
+  res.status(200).send('ok')
 })
 
 module.exports = app
