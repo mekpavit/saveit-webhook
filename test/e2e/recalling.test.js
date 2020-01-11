@@ -1,5 +1,8 @@
 jest.mock('@line/bot-sdk', () => ({
-  middleware: (config) => (req, res, next) => next()
+  middleware: (config) => (req, res, next) => next(),
+  Client: (config) => ({
+    replyMessage: (replyToken, message) => (message),
+  })
 }))
 
 import app from './../../server/server'
@@ -116,7 +119,7 @@ describe('Recalling messages', () => {
       "destination": "dddd"
     }
     const res = await request(app).post('/').send(recalling_request)
-    expect(req.body).toBe([
+    expect(res.body).toStrictEqual([
       {
         "type": "text",
         "text": "ข้อความนี้ คือ สิ่งที่อยากให้จำ"

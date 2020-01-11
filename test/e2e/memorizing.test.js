@@ -1,5 +1,8 @@
 jest.mock('@line/bot-sdk', () => ({
-  middleware: (config) => (req, res, next) => next()
+  middleware: (config) => (req, res, next) => next(),
+  Client: (config) => ({
+    replyMessage: (replyToken, message) => (message),
+  })
 }))
 
 import app from './../../server/server'
@@ -29,7 +32,7 @@ describe('Memorizing messages', () => {
       "destination": "dddd"
     }
     const res = await request(app).post('/').send(first_request)
-    expect(req.body).toBe({
+    expect(res.body).toStrictEqual({
       "type": "text",
       "text": "ถ้ามีข้อความที่อยากให้ผมจำอีก พิมพ์มาได้เลยนะครับ! ถ้าไม่มีแล้ว พิมพ์ว่า `พอ`"
     })
@@ -100,7 +103,7 @@ describe('Memorizing messages', () => {
       "destination": "dddd"
     }
     const res = await request(app).post('/').send(enough_request)
-    expect(res.body).toBe({
+    expect(res.body).toStrictEqual({
       "type": "text",
       "text": "อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ"
     })
@@ -194,7 +197,7 @@ describe('Memorizing messages', () => {
     }
 
     const res = await request(app).post('/').send(naming_request)
-    expect(res.body).toBe({
+    expect(res.body).toStrictEqual({
       "type": "text",
       "text": "ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ!"
     })
