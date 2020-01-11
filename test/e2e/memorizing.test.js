@@ -1,3 +1,9 @@
+jest.mock('@line/bot-sdk', () => ({
+  middleware: (config) => (req, res, next) => next()
+}))
+
+const line = require('@line/bot-sdk')
+
 import app from './../../server/server'
 const request = require('supertest')
 
