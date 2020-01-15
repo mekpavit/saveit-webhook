@@ -10,7 +10,7 @@ const request = require('supertest')
 
 describe('Recalling messages', () => {
 
-  test('it should recall messages when input is `ขอข้อความที่1`', async () => {
+  test('it should recall messages when input is `ขอข้อความที่1`', (done) => {
     const first_request = {
       "events": [
         {
@@ -31,7 +31,6 @@ describe('Recalling messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(first_request)
     const second_request = {
       "events": [
         {
@@ -52,8 +51,6 @@ describe('Recalling messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(second_request)
-
     const enough_request = {
       "events": [
         {
@@ -74,8 +71,6 @@ describe('Recalling messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(enough_request)
-
     const naming_request = {
       "events": [
         {
@@ -96,8 +91,6 @@ describe('Recalling messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(naming_request)
-
     const recalling_request = {
       "events": [
         {
@@ -118,17 +111,18 @@ describe('Recalling messages', () => {
       ],
       "destination": "dddd"
     }
-    const res = await request(app).post('/').send(recalling_request)
-    expect(res.body).toStrictEqual([
-      {
-        "type": "text",
-        "text": "ข้อความนี้ คือ สิ่งที่อยากให้จำ"
-      },
-      {
-        "type": "text",
-        "text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ"
-      }
-    ])
-  })
 
+    request(app).post('/').send(first_request).expect(200, (err, res) => {
+      request(app).post('/').send(second_request).expect(200, (err, res) => {
+        request(app).post('/').send(enough_request).expect(200, (err, res) => {
+          request(app).post('/').send(naming_request).expect(200, (err, res) => {
+            request(app).post('/').send(recalling_request).expect(
+              [{"text": "ข้อความนี้ คือ สิ่งที่อยากให้จำ", "type": "text"}, {"text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ", "type": "text"}]
+            , done)
+          })
+        })
+      })
+    })
+
+  })
 })

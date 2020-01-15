@@ -10,14 +10,14 @@ const request = require('supertest')
 
 describe('Memorizing messages', () => {
 
-  test('it should answer `ถ้ามีข้อความที่อยากให้ผมจำอีก พิมพ์มาได้เลยนะครับ! ถ้าไม่มีแล้ว พิมพ์ว่า `พอ``', async () => {
+  test('it should answer `ถ้ามีข้อความที่อยากให้ผมจำอีก พิมพ์มาได้เลยนะครับ! ถ้าไม่มีแล้ว พิมพ์ว่า `พอ``', (done) => {
     const first_request = {
       "events": [
         {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "aaaa",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -31,21 +31,20 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    const res = await request(app).post('/').send(first_request)
-    expect(res.body).toStrictEqual({
+    request(app).post('/').send(first_request).expect({
       "type": "text",
       "text": "ถ้ามีข้อความที่อยากให้ผมจำอีก พิมพ์มาได้เลยนะครับ! ถ้าไม่มีแล้ว พิมพ์ว่า `พอ`"
-    })
+    }, done)
   })
 
-  test('it should answer `อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ`', async () => {
+  test('it should answer `อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ`', (done) => {
     const first_request = {
       "events": [
         {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "cccc",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -59,14 +58,13 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(first_request)
     const second_request = {
       "events": [
         {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "cccc",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -80,7 +78,6 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(second_request)
 
     const enough_request = {
       "events": [
@@ -88,7 +85,7 @@ describe('Memorizing messages', () => {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "dddd",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -102,21 +99,26 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    const res = await request(app).post('/').send(enough_request)
-    expect(res.body).toStrictEqual({
-      "type": "text",
-      "text": "อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ"
+
+    request(app).post('/').send(first_request).expect(200, (err, res) => {
+      request(app).post('/').send(second_request).expect(200, (err, res) => {
+        request(app).post('/').send(enough_request).expect({
+          "type": "text",
+          "text": "อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ"
+        }, done)
+      })
     })
+
   })
 
-  test('it should answer `ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ!`', async () => {
+  test('it should answer `ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ!`', (done) => {
     const first_request = {
       "events": [
         {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "dddd",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -130,14 +132,14 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(first_request)
+
     const second_request = {
       "events": [
         {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "dddd",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -151,7 +153,6 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(second_request)
 
     const enough_request = {
       "events": [
@@ -159,7 +160,7 @@ describe('Memorizing messages', () => {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "dddd",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -173,7 +174,6 @@ describe('Memorizing messages', () => {
       ],
       "destination": "dddd"
     }
-    await request(app).post('/').send(enough_request)
 
     const naming_request = {
       "events": [
@@ -181,7 +181,7 @@ describe('Memorizing messages', () => {
           "type": "message",
           "replyToken": "aaaa",
           "source": {
-            "userId": "bbbb",
+            "userId": "dddd",
             "type": "user"
           },
           "timestamp": 1578194471425,
@@ -196,11 +196,17 @@ describe('Memorizing messages', () => {
       "destination": "dddd"
     }
 
-    const res = await request(app).post('/').send(naming_request)
-    expect(res.body).toStrictEqual({
-      "type": "text",
-      "text": "ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ!"
+    request(app).post('/').send(first_request).expect(200, (err, res) => {
+      request(app).post('/').send(second_request).expect(200, (err, res) => {
+        request(app).post('/').send(enough_request).expect(200, (err, res) => {
+          request(app).post('/').send(naming_request).expect({
+            "type": "text",
+            "text": "ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ!"
+          }, done)
+        })
+      })
     })
+
   })
 
 })
