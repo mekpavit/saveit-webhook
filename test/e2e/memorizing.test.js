@@ -1,11 +1,18 @@
+class MockClient {
+  constructor(config) {
+    // pass
+  }
+  replyMessage(replyToken, message) {
+    return message
+  }
+}
+
 jest.mock('@line/bot-sdk', () => ({
   middleware: (config) => (req, res, next) => next(),
-  Client: (config) => ({
-    replyMessage: (replyToken, message) => (message),
-  })
+  Client: MockClient
 }))
 
-import app from './../../server/server'
+const app = require('./../../server/server')
 const request = require('supertest')
 
 describe('Memorizing messages', () => {
