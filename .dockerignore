@@ -1,3 +1,4 @@
 .env
 ngrok
 .vscode
+node_modules
