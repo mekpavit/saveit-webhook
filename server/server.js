@@ -5,7 +5,6 @@ const MongoClient = require('mongodb').MongoClient
 require('dotenv').config()
 
 const app = express()
-const port = process.env.PORT
 
 const config = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
