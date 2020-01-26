@@ -16,7 +16,7 @@ const client = new line.Client(config)
 app.use(line.middleware(config))
 app.use(bodyParser.json())
 
-const addMessage = (message, userId, callback) => {
+const addMessage = (inputMessages, userId, callback) => {
   MongoClient.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -29,9 +29,7 @@ const addMessage = (message, userId, callback) => {
         const messages = {
           messagesName: null,
           userId: userId,
-          messages: [
-            message
-          ]
+          messages: inputMessages
         }
         dbo.collection('messages').insertOne(messages, (err, res) => {
           callback(err, res)
@@ -39,7 +37,7 @@ const addMessage = (message, userId, callback) => {
         })
 
       } else {
-        dbo.collection('messages').updateOne({"messagesName": null, "userId": userId}, {$push: {"messages": message}}, (err, res) => {
+        dbo.collection('messages').updateOne({"messagesName": null, "userId": userId}, {$push: {"messages": {$each: inputMessages}}}, (err, res) => {
           callback(err, res)
           db.close()
         })
@@ -105,8 +103,8 @@ app.post('/', (req, res) => {
     }))
 
   } else {
-
-    addMessage(message, userId, (err, result) => {
+    messages = req.body.events.map((event) => { return event.message })
+    addMessage(messages, userId, (err, result) => {
       if (err) throw err
       res.json(client.replyMessage(eventToken, {
         "type": "text",

@@ -54,6 +54,21 @@ describe('Recalling messages', () => {
             "id": "cccc",
             "text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ"
           }
+        },
+        {
+          "type": "message",
+          "replyToken": "aaaa",
+          "source": {
+            "userId": "bbbb",
+            "type": "user"
+          },
+          "timestamp": 1578194471425,
+          "mode": "active",
+          "message": {
+            "type": "text",
+            "id": "cccc",
+            "text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ2"
+          }
         }
       ],
       "destination": "dddd"
@@ -124,7 +139,7 @@ describe('Recalling messages', () => {
         request(app).post('/').send(enough_request).expect(200, (err, res) => {
           request(app).post('/').send(naming_request).expect(200, (err, res) => {
             request(app).post('/').send(recalling_request).expect(
-              [{"text": "ข้อความนี้ คือ สิ่งที่อยากให้จำ", "type": "text"}, {"text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ", "type": "text"}]
+              [{"text": "ข้อความนี้ คือ สิ่งที่อยากให้จำ", "type": "text"}, {"text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ", "type": "text"}, {"text": "ข้อความนี้ คือ อีกข้อความที่อยากให้จำ2", "type": "text"}]
             , done)
           })
         })
