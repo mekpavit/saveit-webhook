@@ -6,6 +6,7 @@
 .DS_Store
 ngrok
 latest_request.txt
+service_account.json
 
 ### Node ###
 # Logs

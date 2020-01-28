@@ -6,6 +6,7 @@
   "author": "Pavit Kiatkraipob <pavit.kiat@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@google-cloud/storage": "^4.3.0",
     "@line/bot-sdk": "^6.8.4",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",

@@ -2,6 +2,8 @@ const express = require('express')
 const line = require('@line/bot-sdk')
 const bodyParser = require('body-parser')
 const MongoClient = require('mongodb').MongoClient
+const fs = require('fs');
+const {Storage} = require('@google-cloud/storage');
 require('dotenv').config()
 
 const app = express()
@@ -74,7 +76,24 @@ app.post('/', (req, res) => {
   const eventToken = req.body.events[0].replyToken
   const userId = req.body.events[0].source.userId
 
-  if (message.text.trim().indexOf('ขอ') === 0) {
+  messages = req.body.events.map((event) => { 
+    if (event.message.type === "text") {
+      return event.message 
+    } else if (event.message.type === "image") {
+      const id = event.message.id
+      const storage = new Storage({'keyFilename': './service_account.json'})
+      const bucket = storage.bucket('saveit-webhook-storage')
+      const file = bucket.file(`${id}.jpeg`)
+
+      client.getMessageContent(event.message.id)
+        .then((readable) => {
+          readable.pipe(file.createWriteStream())
+        })
+    }
+    
+  })
+
+  if (message.type === "text" && message.text.trim().indexOf('ขอ') === 0) {
     const messagesName = message.text.trim().replace('ขอ', '')
     getMessages(messagesName, userId, (err, messages) => {
       const newMessages = []
@@ -84,7 +103,7 @@ app.post('/', (req, res) => {
       res.json(client.replyMessage(eventToken, newMessages))
     })
 
-  } else if (message.text.trim().indexOf('ชื่อ') === 0) {
+  } else if (message.type === "text" && message.text.trim().indexOf('ชื่อ') === 0) {
 
     const messagesName = message.text.trim().replace('ชื่อ', '')
     saveMessage(messagesName, userId, (err, result) => {
@@ -95,7 +114,7 @@ app.post('/', (req, res) => {
       }))  
     })
     
-  } else if (message.text.trim().indexOf('พอ') === 0) {
+  } else if (message.type === "text" && message.text.trim().indexOf('พอ') === 0) {
 
     res.json(client.replyMessage(eventToken, {
       "type": "text",
@@ -103,7 +122,7 @@ app.post('/', (req, res) => {
     }))
 
   } else {
-    messages = req.body.events.map((event) => { return event.message })
+
     addMessage(messages, userId, (err, result) => {
       if (err) throw err
       res.json(client.replyMessage(eventToken, {
