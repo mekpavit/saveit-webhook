@@ -13,44 +13,19 @@ class SaveItClient {
   public handleHTTPRequest(req: Object): boolean {
 
     const saveItRequest: SaveItRequest = this._platform.parseRequest(req);
-    if (saveItRequest.requestStatus === RequestStatus.ADD) {
-      // do ADD
+    const requestStatus = saveItRequest.getRequestStatus();
+    if (requestStatus === RequestStatus.ADD) {
+      // do add
+    } else if (requestStatus === RequestStatus.STOP) {
+      // do stop
+    } else if (requestStatus === RequestStatus.SAVE) {
+      // do save
+    } else if (requestStatus === RequestStatus.RECALL) {
+      // do recall
+    } else {
+      throw new TypeError("No requestStatus provided");
     }
-    if (saveItRequest.requestStatus === RequestStatus.STOP) {
-      // do STOP
-    }
-    if (saveItRequest.requestStatus === RequestStatus.SAVE) {
-      // do SAVE
-    }
-    if (saveItRequest.requestStatus === RequestStatus.RECALL) {
-      // do RECALL
-    }
-
+    return true;
   }
 
 }
-
-interface Storage {
-
-}
-
-interface Database {
-
-}
-
-interface Platform {
-
-  parseRequest(req: Object): SaveItRequest;
-
-}
-
-class SaveItRequest {
-
-  public userId: string;
-  public platformName: string;
-  public messages: Array<Object>;
-  public requestStatus: RequestStatus;
-
-}
-
-enum RequestStatus {ADD, STOP, SAVE, RECALL}
