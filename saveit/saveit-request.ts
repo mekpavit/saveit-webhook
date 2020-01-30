@@ -1,3 +1,5 @@
+import { Message } from './message'
+
 class SaveItRequest {
 
   private _userId: string;
@@ -14,9 +16,9 @@ class SaveItRequest {
     this._messages.push(message);
   }
   
-  public getRequestStatus(): RequestStatus {
-    // do
-  }
+  // public getRequestStatus(): RequestStatus {
+  //   // do
+  // }
 
 }
 
