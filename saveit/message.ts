@@ -1,13 +1,12 @@
-import { Readable } from 'stream'
-import { Storage } from './storage'
+export enum MessageType {Text = "text", Image = "image"}
 
-export enum MessageType {TEXT, IMAGE}
-
-export interface Message {};
+export interface Message {
+  toJSON(): Object;
+};
 
 export class TextMessage implements Message {
 
-  private _type: MessageType = MessageType.TEXT;
+  private _type: MessageType = MessageType.Text;
   private _text: string;
 
   constructor(text: string) {
@@ -16,7 +15,7 @@ export class TextMessage implements Message {
 
   public toJSON(): Object {
     return {
-      "type": this._type,
+      "type": "text",
       "text": this._text
     }
   }
@@ -25,17 +24,18 @@ export class TextMessage implements Message {
 
 export class ImageMessage implements Message {
 
-  private _type: MessageType = MessageType.IMAGE;
+  private _type: MessageType = MessageType.Image;
   private _imageUrl: string;
 
   constructor(imageUrl: string) {
     this._imageUrl = imageUrl;
   }
 
-  public static async fromReadable(readable: Readable, imageId: string, storage: Storage): Promise<ImageMessage> {
-    const fileName = imageId + '.jpeg'
-    const imageUrl = await storage.uploadAndGetUrl(fileName, readable);
-    return new ImageMessage(imageUrl);
+  public toJSON(): Object {
+    return {
+      "type": "image",
+      "imageUrl": this._imageUrl
+    }
   }
 
 }
