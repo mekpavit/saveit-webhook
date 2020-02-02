@@ -1,26 +1,45 @@
-class SaveItClient {
+import { MessageDatabase } from './database';
+import { Platform } from './platform';
+import { SaveItRequest, RequestStatus } from './saveit-request';
+import { SaveItResponse } from './saveit-response';
+import { TextMessage } from './message';
 
-  private _storage: Storage;
-  private _db: Database;;
+export class SaveItClient {
+
+  private _db: MessageDatabase;;
   private _platform: Platform
 
-  constructor(platform: Platform, db: Database, storage: Storage) {
-    this._storage = storage;
+  constructor(platform: Platform, db: MessageDatabase) {
     this._db = db;
     this._platform = platform;
   }
 
-  public handleHTTPRequest(req: Object): boolean {
+  public async handleHTTPRequest(req: Object): Promise<boolean> {
 
-    const saveItRequest: SaveItRequest = this._platform.parseRequest(req);
+    const saveItRequest: SaveItRequest = await this._platform.parseRequest(req);
+    return await this.handleSaveItRequest(saveItRequest);
+
+  }
+
+  public async handleSaveItRequest(saveItRequest: SaveItRequest): Promise<boolean> {
     const requestStatus = saveItRequest.getRequestStatus();
-    if (requestStatus === RequestStatus.ADD) {
-      // do add
-    } else if (requestStatus === RequestStatus.STOP) {
+    if (requestStatus === RequestStatus.Add) {
+      
+      try {
+        await this._db.addMessage(saveItRequest.getMessage(), saveItRequest.getUserId());
+        const saveItResponse = new SaveItResponse();
+        saveItResponse.addMessage(new TextMessage('ถ้ามีข้อความที่อยากให้ผมจำอีก พิมพ์มาได้เลยนะครับ! ถ้าไม่มีแล้ว พิมพ์ว่า `พอ`'));
+        saveItResponse.setPlatformCustomPayload(saveItRequest.getPlatformCustomPayload());
+        this._platform.sendMessages(saveItResponse);
+      } catch(err) {
+        throw new TypeError(err);
+      }
+
+    } else if (requestStatus === RequestStatus.Stop) {
       // do stop
-    } else if (requestStatus === RequestStatus.SAVE) {
+    } else if (requestStatus === RequestStatus.Save) {
       // do save
-    } else if (requestStatus === RequestStatus.RECALL) {
+    } else if (requestStatus === RequestStatus.Recall) {
       // do recall
     } else {
       throw new TypeError("No requestStatus provided");
