@@ -24,7 +24,6 @@ export class SaveItClient {
   public async handleSaveItRequest(saveItRequest: SaveItRequest): Promise<boolean> {
     const requestStatus = saveItRequest.getRequestStatus();
     if (requestStatus === RequestStatus.Add) {
-      
       try {
         await this._db.addMessage(saveItRequest.getMessage(), saveItRequest.getUserId());
         const saveItResponse = new SaveItResponse();
@@ -34,13 +33,26 @@ export class SaveItClient {
       } catch(err) {
         throw new TypeError(err);
       }
-
     } else if (requestStatus === RequestStatus.Stop) {
-      // do stop
+      const saveItResponse = new SaveItResponse();
+      saveItResponse.addMessage(new TextMessage('อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ'));
+      saveItResponse.setPlatformCustomPayload(saveItRequest.getPlatformCustomPayload());
+      this._platform.sendMessages(saveItResponse)
     } else if (requestStatus === RequestStatus.Save) {
-      // do save
+      const messageName = saveItRequest.getMessageName();
+      const userId = saveItRequest.getUserId()
+      const savedMessageName = await this._db.saveMessageName(messageName, userId);
+      const saveitResponse = new SaveItResponse();
+      saveitResponse.addMessage(new TextMessage('ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ! เช่น `ขอ' + savedMessageName + '`'));
+      this._platform.sendMessages(saveitResponse);
     } else if (requestStatus === RequestStatus.Recall) {
-      // do recall
+      const messageName = saveItRequest.getMessageName();
+      const userId = saveItRequest.getUserId();
+      const messages = await this._db.getMessages(messageName, userId);
+      const saveitResponse = new SaveItResponse();
+      messages.forEach((msg) => {saveitResponse.addMessage(msg);})
+      
+      this._platform.sendMessages(messages);
     } else {
       throw new TypeError("No requestStatus provided");
     }
