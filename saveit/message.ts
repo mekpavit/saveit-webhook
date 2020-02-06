@@ -15,6 +15,9 @@ export class TextMessage implements Message {
   }
 
   public static fromJSON(JSON: {type: string, text: string}): Message {
+    if (JSON.type !== 'text') {
+      throw new Error('Object must be {"type": "text", "text": string}')
+    }
     const message = new TextMessage(JSON.text);
     return message;
   }
@@ -27,6 +30,7 @@ export class TextMessage implements Message {
   }
 
   public equals(y: Object) {
+    if (y == null) { return false; }
     if (this === y) { return true; }
     if (typeof(this) !== typeof(y)) { return false; }
     const that = <TextMessage> y;
@@ -45,7 +49,8 @@ export class ImageMessage implements Message {
   }
 
   public static fromJSON(JSON: {type: string, imageUrl: string}): Message {
-    return new TextMessage(JSON.imageUrl);
+    if (JSON.type !== 'image') { throw new Error('Object must be {"type": "image", "imageUrl": string}'); }
+    return new ImageMessage(JSON.imageUrl);
   }
 
   public toJSON(): Object {
@@ -56,10 +61,30 @@ export class ImageMessage implements Message {
   }
 
   public equals(y: Object) {
+    if (y == null) { return false; }
     if (this === y) { return true; }
     if (typeof(this) !== typeof(y)) { return false; }
     const that = <ImageMessage> y;
     return this._imageUrl === that._imageUrl;
+  }
+
+}
+
+export class MessageParser {
+
+  public static parseObject(message: Object): Message {
+    if (message == null) { throw new Error('Expect valid message JSON object but `null` was given'); }
+    if (!('type' in message)) { throw new Error('Expect `type` attribute in the input object'); }
+    const messageJSON: {type: string} = <{type: string}> message;
+    if (messageJSON.type == 'text') {
+      const textMessageJSON: {type: string, text: string} = <{type: string, text: string}> messageJSON;
+      return TextMessage.fromJSON(textMessageJSON);
+    }
+    if (messageJSON.type == 'image') {
+      const imageMessageJSON: {type: string, imageUrl: string} = <{type: string, imageUrl: string}> messageJSON;
+      return ImageMessage.fromJSON(imageMessageJSON);
+    }
+    throw new Error('The input object does not match any message type');
   }
 
 }
