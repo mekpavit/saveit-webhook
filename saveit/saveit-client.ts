@@ -2,7 +2,7 @@ import { MessageDatabase } from './database';
 import { Platform } from './platform';
 import { SaveItRequest, RequestStatus } from './saveit-request';
 import { SaveItResponse } from './saveit-response';
-import { TextMessage } from './message';
+import { TextMessage, MessageParser } from './message';
 
 export class SaveItClient {
 
@@ -50,9 +50,11 @@ export class SaveItClient {
       const userId = saveItRequest.getUserId();
       const messages = await this._db.getMessages(messageName, userId);
       const saveitResponse = new SaveItResponse();
-      messages.forEach((msg) => {saveitResponse.addMessage(msg);})
-      
-      this._platform.sendMessages(messages);
+      messages.forEach((msg) => {
+        const messageObject = MessageParser.parseObject(msg);
+        saveitResponse.addMessage(messageObject);
+      })
+      this._platform.sendMessages(saveitResponse);
     } else {
       throw new TypeError("No requestStatus provided");
     }
