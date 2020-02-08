@@ -3,7 +3,8 @@ import { SaveItClient, SaveItRequest, SaveItResponse, Platform, MessageDatabase,
 class MockPlatform implements Platform {
 
   public saveItReponse: SaveItResponse;
-  public parseRequest(): Promise<SaveItRequest> {return new Promise((resolve, reject) => {resolve();})}
+  public parseHTTPRequest(): Promise<SaveItRequest> {return new Promise((resolve, reject) => {resolve();})}
+  public validateHTTPRequest(): Promise<void> {return new Promise((resolve, reject) => resolve())}
   public sendMessages(saveItReponse: SaveItResponse): Promise<boolean> {
     this.saveItReponse = saveItReponse;
     return new Promise((resolve, reject) => {resolve(true)})

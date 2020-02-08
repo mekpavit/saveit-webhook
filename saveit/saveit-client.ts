@@ -14,9 +14,9 @@ export class SaveItClient {
     this._platform = platform;
   }
 
-  public async handleHTTPRequest(req: Object): Promise<boolean> {
-
-    const saveItRequest: SaveItRequest = await this._platform.parseRequest(req);
+  public async handleHTTPRequest(req: {headers: Object, body: string}): Promise<boolean> {
+    this._platform.validateHTTPRequest(req);
+    const saveItRequest: SaveItRequest = await this._platform.parseHTTPRequest(req);
     return await this.handleSaveItRequest(saveItRequest);
 
   }
