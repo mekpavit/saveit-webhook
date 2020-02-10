@@ -30,7 +30,7 @@ export class MongoDBMessageDatabase implements MessageDatabase {
         dbo.collection(this._collectionName).find({"messagesName": null, "userId": userId}).limit(1).toArray((err, foundMessages) => {
           
           if (foundMessages.length === 0) {
-            const messagesDoc = {
+            const messagesDoc: {messagesName: null | any, userId: string, messages: Array<Object>} = {
               'messagesName': null,
               'userId': userId,
               'messages': messages
@@ -40,7 +40,7 @@ export class MongoDBMessageDatabase implements MessageDatabase {
             })
     
           } else {
-            dbo.collection(this._collectionName).updateOne({"messagesName": null, "userId": userId}, {$push: {"messages": {$each: inputMessages}}}, (err, res) => {
+            dbo.collection(this._collectionName).updateOne({"messagesName": null, "userId": userId}, {$push: {"messages": {$each: messages}}}, (err, res) => {
               db.close().then(() => resolve())
             })
           }
@@ -65,9 +65,14 @@ export class MongoDBMessageDatabase implements MessageDatabase {
     return new Promise<Array<Object>>((resolve, reject) => {
       mongo.MongoClient.connect(process.env.MONGO_URL, (err, db) => {
         if (err) throw err
-        const dbo = db.db('db')
-        return dbo.collection('messages').findOne<{messages: Array<Object>}>({"messagesName": messageName, "userId": userId}, (err, res) => {
-          db.close().then(() => resolve(res.messages));
+        const dbo = db.db(this._dbName)
+        dbo.collection(this._collectionName).findOne<{messages: Array<Object>}>({"messagesName": messageName, "userId": userId}, (err, res) => {
+          if (res) {
+            db.close().then(() => resolve(res.messages));
+          } else {
+            db.close().then(() => resolve([]));
+          }
+          
         })
       })
     })
