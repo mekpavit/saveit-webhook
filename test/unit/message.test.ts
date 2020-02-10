@@ -22,7 +22,7 @@ describe("TextMessage", () => {
 
     test('when input is null, it should return false', () => {
       const textMessage = new TextMessage('a');
-      const that = null
+      const that: null = null
       const result = textMessage.equals(that);
       expect(result).toBe(false);
     })
@@ -97,7 +97,7 @@ describe("ImageMessage", () => {
 
     test('when input is null, it should return false', () => {
       const imageMessage = new ImageMessage('www.image.com');
-      const that = null
+      const that: null = null
       const result = imageMessage.equals(that);
       expect(result).toBe(false);
     })
