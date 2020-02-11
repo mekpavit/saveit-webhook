@@ -6,7 +6,7 @@ dotenv.config()
 
 const app = express();
 const port = process.env.PORT;
-const storage = new GoogleCloudStorage(process.env.SERVICE_ACCOUNT_JSON_FILE_PATH, 'save-it-storage');
+const storage = new GoogleCloudStorage(process.env.SERVICE_ACCOUNT_JSON_FILE_PATH, 'saveit-webhook-storage');
 const db = new MongoDBMessageDatabase(process.env.MONGO_URL, 'db', 'message');
 const platform = new LINEPlatform(process.env.CHANNEL_ACCESS_TOKEN, process.env.CHANNEL_SECRET, storage);
 const saveItClient = new SaveItClient(platform, db);
