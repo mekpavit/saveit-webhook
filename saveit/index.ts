@@ -1,4 +1,4 @@
-export { MessageType, Message, TextMessage, ImageMessage, MessageParser } from './message';
+export { Message, TextMessage, ImageMessage } from './message';
 export { SaveItClient } from './saveit-client';
 export { Platform, LINEPlatform } from './platform';
 export { MessageDatabase, MongoDBMessageDatabase } from './database';
