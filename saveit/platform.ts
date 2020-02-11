@@ -1,9 +1,11 @@
 import { SaveItRequest, RequestStatus } from './saveit-request';
 import { SaveItResponse } from './saveit-response';
 import * as line from '@line/bot-sdk';
-import { TextMessage, ImageMessage } from './message';
+import { Message, TextMessage, ImageMessage } from './message';
 import { Storage } from './storage';
 import sharp from 'sharp';
+import Axios from 'axios';
+import { Readable } from 'stream';
 
 export interface Platform {
 
@@ -26,7 +28,7 @@ export class LINEPlatform implements Platform {
   }
 
   public parseHTTPRequest(req: {headers: Object, body: Object}): Promise<SaveItRequest> {
-    return new Promise<SaveItRequest>((resolve, reject) => {
+    return new Promise<SaveItRequest>(async (resolve, reject) => {
       const saveItRequest = new SaveItRequest();
       // const requestBody: line.WebhookRequestBody = JSON.parse(req.body);
       const requestBody = <line.WebhookRequestBody> req.body;
@@ -54,20 +56,22 @@ export class LINEPlatform implements Platform {
         }
       })
       if (saveItRequest.getRequestStatus() === RequestStatus.Add) {
-        requestBody.events.forEach( async (event) => {
+
+        for (const event of requestBody.events) {
           if (event.type === 'message') {
             const messageEvent = <line.MessageEvent> event;
             const message = messageEvent.message;
             if (message.type === 'text') {
-              saveItRequest.addMessage(new TextMessage(message.text));
+              saveItRequest.addMessage({type: 'text', text: message.text});
             }
             if (message.type === 'image') {
               const readableImage = await this._client.getMessageContent(message.id);
-              const imageUrl = await this._storage.uploadAndGetUrl(message.id, readableImage);
-              saveItRequest.addMessage(new ImageMessage(imageUrl));
+              const imageUrl = await this._storage.uploadAndGetUrl(message.id + '.jpeg', readableImage);
+              saveItRequest.addMessage({ type: 'image', imageUrl: imageUrl });
             }
+
           }
-        })
+        }
       }
       
       resolve(saveItRequest);
@@ -87,20 +91,29 @@ export class LINEPlatform implements Platform {
 
     return new Promise<boolean>(async (resolve, reject) => {
       const messages = new Array<line.Message>();
-      saveItResponse.getMessages().forEach((message) => {
-        const messageObject = <{type: string}> message.toJSON();
-        if (messageObject['type'] === 'text') {
-          messages.push(<line.TextMessage> messageObject)
+      const saveItMessages = saveItResponse.getMessages();
+      for (const msg of saveItMessages) {
+        if (msg.type === 'text') {
+          messages.push(<line.TextMessage> {type: 'text', text: msg.text});
         }
-        if (messageObject['type'] === 'image') {
-          // const publicImageUrl = await this._storage.getSignedUrlFromFileName(messageObject['imageUrl']);
-          // sharp(publicImageUrl).resize(240, 240).png()
-        
+        if (msg.type === 'image') {
+          const publicImageUrl = await this._storage.getSignedUrlFromFileName(msg.imageUrl);
+          const previewImageMaker = sharp().resize(240, 240);
+          const imageStream = await Axios({
+            url: publicImageUrl,
+            method: 'GET',
+            responseType: 'stream'
+          })
+          const previewImage = await imageStream.data.pipe(previewImageMaker);
+          const previewImageUrl = await this._storage.uploadAndGetUrl(msg.imageUrl + '_preview.jpeg', previewImage);
+          const publicPreviewImageUrl = await this._storage.getSignedUrlFromFileName(previewImageUrl);
+          console.log('real: ', publicImageUrl)
+          console.log('preview: ', publicPreviewImageUrl)
+          messages.push(<line.ImageMessage> {type: 'image', originalContentUrl: publicImageUrl, previewImageUrl: publicPreviewImageUrl})
         }
-      });
+      }
       const payload = <{replyToken: string}> saveItResponse.getPlatformCustomPayload()
       const replyToken = payload['replyToken'];
-      console.log(messages);
       const result = await this._client.replyMessage(replyToken, messages)
       resolve(true)
     })
