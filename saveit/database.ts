@@ -1,11 +1,18 @@
 import * as mongo from 'mongodb';
+import { Message } from './message';
 
 export interface MessageDatabase {
   
-  addMessage(messages: Array<Object>, userId: string): Promise<void>;
+  addMessage(messages: Array<Message>, userId: string): Promise<void>;
   saveMessageName(messageName: string, userId: string): Promise<string>;
-  getMessages(messageName: string, userId: string): Promise<Array<Object>>;
+  getMessages(messageName: string, userId: string): Promise<Array<Message>>;
 
+}
+
+export type MessageDocument = {
+  messagesName: string | null,
+  userId: string,
+  messages: Array<Message>
 }
 
 export class MongoDBMessageDatabase implements MessageDatabase {
@@ -20,17 +27,18 @@ export class MongoDBMessageDatabase implements MessageDatabase {
     this._collectionName = collectionName;
   }
 
-  public addMessage(messages: Array<Object>, userId: string): Promise<void> {
+  public addMessage(messages: Array<Message>, userId: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       mongo.MongoClient.connect(this._mongoUrl, {
         useNewUrlParser: true
       }, (err, db) => {
         if (err) throw err;
+        console.log(messages);
         const dbo = db.db(this._dbName);
         dbo.collection(this._collectionName).find({"messagesName": null, "userId": userId}).limit(1).toArray((err, foundMessages) => {
           
           if (foundMessages.length === 0) {
-            const messagesDoc: {messagesName: null | any, userId: string, messages: Array<Object>} = {
+            const messagesDoc: MessageDocument = {
               'messagesName': null,
               'userId': userId,
               'messages': messages
@@ -61,12 +69,12 @@ export class MongoDBMessageDatabase implements MessageDatabase {
     })
   }
 
-  public getMessages(messageName: string, userId: string): Promise<Array<Object>> {
-    return new Promise<Array<Object>>((resolve, reject) => {
+  public getMessages(messageName: string, userId: string): Promise<Array<Message>> {
+    return new Promise<Array<Message>>((resolve, reject) => {
       mongo.MongoClient.connect(process.env.MONGO_URL, (err, db) => {
         if (err) throw err
         const dbo = db.db(this._dbName)
-        dbo.collection(this._collectionName).findOne<{messages: Array<Object>}>({"messagesName": messageName, "userId": userId}, (err, res) => {
+        dbo.collection(this._collectionName).findOne<MessageDocument>({"messagesName": messageName, "userId": userId}, (err, res) => {
           if (res) {
             db.close().then(() => resolve(res.messages));
           } else {
