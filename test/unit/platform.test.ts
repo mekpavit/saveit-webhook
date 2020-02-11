@@ -157,14 +157,14 @@ describe('LINEPlatform', () => {
         'body': '{"events": [{"replyToken": "abcd1234", "source": {"userId": "12345"}, "type": "message", "message": {"type": "text", "text": "remember 1"}}, {"replyToken": "abcd1234", "source": {"userId": "12345"}, "type": "message", "message": {"type": "text", "text": "remember 2"}}]}'
       };
 
-      const expectedMessages = [
-        new TextMessage('remember 1'), new TextMessage('remember 2')
+      const expectedMessages: Array<TextMessage> = [
+        { "type": "text", "text": "remember 1"}, { "type": "text", "text": "remember 2"}
       ]
 
       const storage = new StubStorage('imageid.jpeg');
       const platform = new LINEPlatform("abc", "abc", storage);
       const saveItRequest: SaveItRequest  = await platform.parseHTTPRequest(req);
-      expect(saveItRequest.getMessage()).toStrictEqual<Array<Message>>(expectedMessages);
+      expect(saveItRequest.getMessage()).toStrictEqual(expectedMessages);
 
     })
 

@@ -1,4 +1,4 @@
-import { SaveItClient, SaveItRequest, SaveItResponse, Platform, MessageDatabase, TextMessage, RequestStatus } from './../../saveit';
+import { SaveItClient, SaveItRequest, SaveItResponse, Platform, MessageDatabase, Message, RequestStatus } from './../../saveit';
 
 class MockPlatform implements Platform {
 
@@ -14,9 +14,9 @@ class MockPlatform implements Platform {
 
 class MockMessageDatabase implements MessageDatabase {
 
-  private mockMessages: Array<Object>;
+  private mockMessages: Array<Message>;
 
-  constructor(mockMessages: Array<Object>) {
+  constructor(mockMessages: Array<Message>) {
     this.mockMessages = mockMessages;
   }
 
@@ -28,7 +28,7 @@ class MockMessageDatabase implements MessageDatabase {
     return new Promise((resolve, reject) => {resolve(messageName);})
   }
 
-  public getMessages(messageName: string, userId: string): Promise<Array<Object>> {
+  public getMessages(messageName: string, userId: string): Promise<Array<Message>> {
     return new Promise((resolve, reject) => {resolve(this.mockMessages);});
   }
 
@@ -46,13 +46,13 @@ describe('SaveItClient', () => {
 
       const saveItRequest = new SaveItRequest();
       saveItRequest.setUserId('111000');
-      saveItRequest.addMessage(new TextMessage("ช่วยจำข้อความนี้หน่อย"));
+      saveItRequest.addMessage({ type: 'text', text: 'ช่วยจำข้อความนี้หน่อย'});
       saveItRequest.setRequestStatus(RequestStatus.Add);
       
       await saveItClient.handleSaveItRequest(saveItRequest);
       const respondedMessages = mockPlatform.saveItReponse.getMessages();
 
-      expect(respondedMessages[0].toJSON()).toStrictEqual({
+      expect(respondedMessages[0]).toStrictEqual({
         "type": "text",
         "text": "ถ้ามีข้อความที่อยากให้ผมจำอีก พิมพ์มาได้เลยนะครับ! ถ้าไม่มีแล้ว พิมพ์ว่า `พอ`"
       })
@@ -66,13 +66,13 @@ describe('SaveItClient', () => {
 
       const saveItRequest = new SaveItRequest();
       saveItRequest.setUserId('111000');
-      saveItRequest.addMessage(new TextMessage("พอ"));
+      saveItRequest.addMessage({ type: 'text', text: 'พอ' });
       saveItRequest.setRequestStatus(RequestStatus.Stop);
 
       await saveItClient.handleSaveItRequest(saveItRequest);
       const respondedMessages = mockPlatform.saveItReponse.getMessages();
 
-      expect(respondedMessages[0].toJSON()).toStrictEqual({
+      expect(respondedMessages[0]).toStrictEqual({
         "type": "text",
         "text": "อยากให้ผมจำข้อความพวกนี้ด้วยชื่ออะไรครับ? พิมพ์ `ชื่อ` ตามด้วยชื่อที่ต้องการได้เลยครับ"
       })
@@ -87,14 +87,14 @@ describe('SaveItClient', () => {
 
       const saveItRequest = new SaveItRequest();
       saveItRequest.setUserId('111000');
-      saveItRequest.addMessage(new TextMessage("ชื่อข้อความหนึ่ง"));
+      saveItRequest.addMessage({ type: 'text', text: 'ชื่อข้อความหนึ่ง'});
       saveItRequest.setMessageName('ข้อความที่หนึ่ง');
       saveItRequest.setRequestStatus(RequestStatus.Save);
 
       await saveItClient.handleSaveItRequest(saveItRequest);
       const respondedMessages = mockPlatform.saveItReponse.getMessages();
 
-      expect(respondedMessages[0].toJSON()).toStrictEqual({
+      expect(respondedMessages[0]).toStrictEqual({
         "type": "text",
         "text": "ผมจำข้อความนี้ของพี่แล้วครับ ถ้าอยากให้ผมส่งข้อความให้ พิมพ์ `ขอ` ตามด้วยชื่อข้อความได้เลยครับ! เช่น `ขอข้อความที่หนึ่ง`"
       })
@@ -118,14 +118,14 @@ describe('SaveItClient', () => {
 
       const saveItRequest = new SaveItRequest();
       saveItRequest.setUserId('111000');
-      saveItRequest.addMessage(new TextMessage("ขอข้อความหนึ่ง"));
+      saveItRequest.addMessage({ type: 'text', text: 'ขอข้อความหนึ่ง'});
       saveItRequest.setMessageName('ข้อความที่หนึ่ง');
       saveItRequest.setRequestStatus(RequestStatus.Recall);
 
       await saveItClient.handleSaveItRequest(saveItRequest);
       const respondedMessages = mockPlatform.saveItReponse.getMessages();
 
-      expect([respondedMessages[0].toJSON(), respondedMessages[1].toJSON()]).toStrictEqual([{
+      expect([respondedMessages[0], respondedMessages[1]]).toStrictEqual([{
         "type": "text",
         "text": "ทดลอง"
       },
