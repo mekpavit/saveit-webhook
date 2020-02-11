@@ -15,6 +15,7 @@ export class GoogleCloudStorage implements Storage {
 
   constructor(serviceAccountJSONFilePath: string, bucketName: string) {
     this._serviceAccountJSONFilePath = serviceAccountJSONFilePath;
+    this._bucketName = bucketName;
   }
 
   public uploadAndGetUrl(fileName: string, readable: Readable): Promise<string> {
